@@ -3,9 +3,9 @@
  * This is the ONLY file you need to edit to customize the bank name.
  */
 const config = {
-  bankName: "Bank 3",
-  bankTagline: "Up to 3 times art",
-  teamName: "Team 3",
+  bankName: "Bank Name",
+  bankTagline: "Your trusted digital banking partner",
+  teamName: "Team IO",
   currency: "PLN",
   locale: "pl-PL",
 };
