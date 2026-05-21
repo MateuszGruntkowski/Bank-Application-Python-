@@ -1,13 +1,15 @@
 """Accounts router - endpoints for account management."""
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session
+from fastapi import APIRouter, Depends, HTTPException, Response
+from sqlmodel import Session, select
+from datetime import datetime
 
 from backend.auth import get_current_user
 from backend.database import get_db
 from backend.models.user import User
+from backend.models.account import Account
 from backend.services.balance_calculator import BalanceCalculator
-
+from backend.services.statement_generator import StatementGenerator
 router = APIRouter(prefix="/accounts", tags=["Accounts"])
 
 
@@ -24,12 +26,26 @@ def get_my_transactions(
 
 @router.get("/me/statement")
 def get_statement(
-    date_from: str = "", date_to: str = "",
+    date_from: datetime, date_to: datetime,
     current_user: User = Depends(get_current_user), db: Session = Depends(get_db),
 ):
     """Generate and download a CSV bank statement."""
-    # TODO: Implement using StatementGenerator
-    raise HTTPException(status_code=501, detail="Not implemented - waiting for StatementGenerator")
+    # Looking for a bank account that belongs to the logged in user
+    account = db.exec(select(Account).where(Account.user_id == current_user.id)).first()
+
+    if not account:
+        raise HTTPException(status_code=404, detail="Brak konta dla tego użytkownika")
+
+    # Launch website
+    generator = StatementGenerator(db)
+    csv_content = generator.generate_csv(account.id, date_from, date_to)
+
+    # Return the response as a file downloaded by the browser
+    return Response(
+        content=csv_content,
+        media_type="text/csv",
+        headers={"Content-Disposition": 'attachment; filename="bank_statement.csv"'}
+    )
 
 
 @router.get("/me/balance")
