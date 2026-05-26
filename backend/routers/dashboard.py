@@ -6,6 +6,7 @@ from sqlmodel import Session
 from backend.auth import get_current_user
 from backend.database import get_db
 from backend.models.user import User
+from backend.services.dashboard_service import DashboardService
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
