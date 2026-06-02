@@ -7,6 +7,7 @@ class TransactionType(str, Enum):
     """Enumeration for transaction types (income / outcome)."""
     IN = "IN"
     OUT = "OUT"
+    OUT_EXTERNAL = "OUT_EXTERNAL"
 
 class Transaction(SQLModel, table=True):
     """
