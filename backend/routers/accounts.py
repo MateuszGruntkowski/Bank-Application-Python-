@@ -1,6 +1,7 @@
 """Accounts router - endpoints for account management."""
 
 from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi.security import HTTPBearer
 from sqlmodel import Session, select
 from datetime import datetime
 
@@ -10,19 +11,34 @@ from backend.models.user import User
 from backend.models.account import Account
 from backend.services.balance_calculator import BalanceCalculator
 from backend.services.statement_generator import StatementGenerator
-router = APIRouter(prefix="/accounts", tags=["Accounts"])
+from backend.services.transaction_history_service import TransactionHistoryService
+
+security = HTTPBearer()
+router = APIRouter(prefix="/accounts", tags=["Accounts"],dependencies=[Depends(security)])
 
 
 
 @router.get("/me/transactions")
 def get_my_transactions(
-    page: int = 1, per_page: int = 10, sort_order: str = "desc",
-    current_user: User = Depends(get_current_user), db: Session = Depends(get_db),
+        page: int = 1,
+        per_page: int = 10,
+        sort_order: str = "desc",
+        current_user: User = Depends(get_current_user),
+        db: Session = Depends(get_db),
 ):
     """Return paginated transaction history for the current user."""
-    # TODO: Implement using TransactionHistoryService
-    raise HTTPException(status_code=501, detail="Not implemented - waiting for TransactionHistoryService")
 
+    account = db.exec(select(Account).where(Account.user_id == current_user.id)).first()
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+
+    limit = per_page
+    offset = (page - 1) * per_page
+
+    service = TransactionHistoryService(db)
+    transactions = service.get_history(account_id=account.id, limit=limit, offset=offset, sort_order=sort_order)
+
+    return transactions
 
 @router.get("/me/statement")
 def get_statement(
