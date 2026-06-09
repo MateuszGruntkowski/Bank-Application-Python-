@@ -1,7 +1,15 @@
-from sqlmodel import Session, select
+import pytest
+from sqlmodel import Session, select, create_engine, SQLModel
 from backend.models.user import User
 from backend.seeder import DatabaseSeeder
 
+@pytest.fixture
+def db_session():
+    """Preparing a temporary database in RAM."""
+    engine = create_engine("sqlite:///:memory:")
+    SQLModel.metadata.create_all(engine)
+    with Session(engine) as session:
+        yield session
 
 def test_seeder_creates_five_users_and_admin(db_session: Session):
     """Test if seeder populates the database with exactly 6 users."""

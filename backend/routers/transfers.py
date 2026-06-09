@@ -9,6 +9,7 @@ from backend.database import get_db
 from backend.models.account import Account
 from backend.models.user import User
 from backend.services.transfer_service import AccountNotFoundError, InsufficientFundsError, TransferService
+from backend.services.external_transfer_service import ExternalTransferService
 
 router = APIRouter(prefix="/transfers", tags=["Transfers"])
 
@@ -49,5 +50,21 @@ def make_transfer(request: TransferRequest, current_user: User = Depends(get_cur
 @router.post("/external")
 def make_external_transfer(request: TransferRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Execute a transfer to an external account."""
-    # TODO: Implement using ExternalTransferService
-    raise HTTPException(status_code=501, detail="Not implemented - waiting for ExternalTransferService")
+    statement = select(Account).where(Account.user_id == current_user.id)
+    from_account = db.exec(statement).first()
+    if from_account is None:
+        raise HTTPException(status_code=404, detail="Sender account not found.")
+
+    service = ExternalTransferService(session=db)
+
+    try:
+        service.execute_transfer(
+            from_account=from_account,
+            to_account_number=request.to_account_number,
+            amount=request.amount,
+            title=request.title,
+        )
+    except InsufficientFundsError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+    return {"message": "Transfer completed successfully."}

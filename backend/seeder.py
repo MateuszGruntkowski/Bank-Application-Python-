@@ -3,9 +3,9 @@ Database seeder - creates initial admin user and test data.
 Run once on first startup to populate the database.
 """
 
-from decimal import Decimal
 from sqlmodel import Session, select
-
+from datetime import datetime, UTC
+from backend.models.transaction import Transaction
 from backend.auth.service import AuthService
 from backend.database import engine
 from backend.models.account import Account
@@ -33,7 +33,7 @@ class DatabaseSeeder:
             return
 
         self._seed_admin()
-        users = self._seed_test_users()
+        users = self._seed_test_users
         self._seed_transfers(users)
 
     def _seed_admin(self):
@@ -51,6 +51,7 @@ class DatabaseSeeder:
         self.session.add(Account(user_id=admin.id, account_number=_generate_account_number(1)))
         self.session.commit()
 
+    @property
     def _seed_test_users(self) -> list[User]:
         """Creates exactly 5 test users as required by task 3."""
         users_data = [
@@ -72,8 +73,21 @@ class DatabaseSeeder:
             self.session.commit()
             self.session.refresh(user)
 
-            self.session.add(Account(user_id=user.id, account_number=_generate_account_number(i)))
+            account = Account(user_id=user.id, account_number=_generate_account_number(i))
+            self.session.add(account)
             self.session.commit()
+            self.session.refresh(account)
+
+            initial_deposit = Transaction(
+                account_id=account.id,
+                amount=1000.0,
+                title="Initial Income",
+                type="IN",
+                created_at=datetime.now(UTC)
+            )
+            self.session.add(initial_deposit)
+            self.session.commit()
+
             created_users.append(user)
 
         return created_users
@@ -90,13 +104,13 @@ class DatabaseSeeder:
             if sender_acc and receiver_acc:
                 try:
                     self.transfer_service.execute_transfer(
-                        from_account=sender_acc.account_number,
-                        to_account=receiver_acc.account_number,
-                        amount=Decimal("100.00"),
+                        from_account=sender_acc,
+                        to_account_number=receiver_acc.account_number,
+                        amount=100.0,
                         title=f"Test transfer from {sender.username}"
                     )
                 except Exception as e:
-                    pass
+                    print(f"Could not transfer from {sender.username}: {e}")
 
 
 def seed():
