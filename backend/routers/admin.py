@@ -7,6 +7,7 @@ from sqlmodel import Session
 from backend.auth import require_admin
 from backend.database import get_db
 from backend.models.user import User
+from backend.services.scoring import CreditScoringService
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -50,8 +51,7 @@ def reject_loan(loan_id: int, request: RejectRequest, admin: User = Depends(requ
 @router.get("/scoring/{user_id}")
 def get_credit_score(user_id: int, admin: User = Depends(require_admin), db: Session = Depends(get_db)):
     """Get credit score for a specific user."""
-    # TODO: Implement using CreditScoringService
-    raise HTTPException(status_code=501, detail="Not implemented - waiting for CreditScoringService")
+    return CreditScoringService.calculate_score(user_id, db)
 
 
 @router.post("/transactions/{transaction_id}/reverse")
