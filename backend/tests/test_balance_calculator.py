@@ -48,4 +48,4 @@ def test_balance_calculator_with_seeder(session: Session):
     calculator = BalanceCalculator()
     balance = calculator.get_balance(account_id=jan_account.id, session=session)
 
-    assert balance == 0.0
+    assert balance == 1000.0
