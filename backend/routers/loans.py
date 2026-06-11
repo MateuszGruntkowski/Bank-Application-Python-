@@ -7,6 +7,7 @@ from sqlmodel import Session
 from backend.auth import get_current_user, require_admin
 from backend.database import get_db
 from backend.models.user import User
+from backend.services.loan_list_service import LoanListService
 
 router = APIRouter(prefix="/loans", tags=["Loans"])
 
@@ -32,7 +33,7 @@ def apply_for_loan(request: LoanApplicationRequest, current_user: User = Depends
 def get_my_loans(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Get current user's loans."""
     # TODO: Implement using LoanListService
-    raise HTTPException(status_code=501, detail="Not implemented - waiting for LoanListService")
+    return LoanListService(db).get_user_loans(current_user.id)
 
 
 @router.get("/{loan_id}/schedule")
