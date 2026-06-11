@@ -1,7 +1,6 @@
 """Accounts router - endpoints for account management."""
 
 from fastapi import APIRouter, Depends, HTTPException, Response
-from fastapi.security import HTTPBearer
 from sqlmodel import Session, select
 from datetime import datetime
 
@@ -13,8 +12,7 @@ from backend.services.balance_calculator import BalanceCalculator
 from backend.services.statement_generator import StatementGenerator
 from backend.services.transaction_history_service import TransactionHistoryService
 
-security = HTTPBearer()
-router = APIRouter(prefix="/accounts", tags=["Accounts"],dependencies=[Depends(security)])
+router = APIRouter(prefix="/accounts", tags=["Accounts"])
 
 
 
