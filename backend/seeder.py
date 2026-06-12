@@ -10,6 +10,7 @@ from backend.auth.service import AuthService
 from backend.database import engine
 from backend.models.account import Account
 from backend.models.user import User
+from backend.models.user_profile import UserProfile
 from backend.services.transfer_service import TransferService
 
 
@@ -78,6 +79,17 @@ class DatabaseSeeder:
             self.session.commit()
             self.session.refresh(account)
 
+            imie, nazwisko = name.split("_")
+
+            user_profile = UserProfile(
+                user_id=user.id,
+                first_name=imie.capitalize(),
+                last_name=nazwisko.capitalize(),
+                phone=f"+48 111 222 {str(i).zfill(3)}"
+            )
+
+            self.session.add(user_profile)
+            self.session.commit()
             initial_deposit = Transaction(
                 account_id=account.id,
                 amount=1000.0,

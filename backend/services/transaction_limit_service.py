@@ -29,6 +29,13 @@ class TransactionLimitService:
         )
         today_transactions = self.session.exec(statement).all()
 
+        if len(today_transactions) >= account.daily_count_limit:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Transfer denied: Exceeded daily count limit. "
+                       f"You already made {len(today_transactions)} transfers today. Your limit is: {account.daily_count_limit}."
+            )
+
         current_daily_total = sum(t.amount for t in today_transactions)
 
         if current_daily_total + amount > account.daily_limit:
@@ -38,7 +45,7 @@ class TransactionLimitService:
                        f"Today already transferred: {current_daily_total}, Your limit is: {account.daily_limit}."
             )
 
-    def update_limits(self, account_id: int, new_daily_limit: float, new_single_limit: float) -> Account:
+    def update_limits(self, account_id: int, new_daily_limit: float, new_single_limit: float, new_daily_count: int) -> Account:
         """Updates database with new transfer limits set by client."""
         statement = select(Account).where(Account.id == account_id)
         account = self.session.exec(statement).first()
@@ -48,6 +55,7 @@ class TransactionLimitService:
 
         account.daily_limit = new_daily_limit
         account.single_transfer_limit = new_single_limit
+        account.daily_count_limit = new_daily_count
 
         self.session.add(account)
         self.session.commit()
