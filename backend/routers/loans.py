@@ -7,6 +7,7 @@ from sqlmodel import Session
 from backend.auth import get_current_user, require_admin
 from backend.database import get_db
 from backend.models.user import User
+from backend.services.loan_application_service import LoanApplicationService, LoanApplicationError
 from backend.services.loan_list_service import LoanListService
 
 router = APIRouter(prefix="/loans", tags=["Loans"])
@@ -22,12 +23,26 @@ class LoanRepaymentRequest(BaseModel):
     amount: float
 
 
-@router.post("/apply")
-def apply_for_loan(request: LoanApplicationRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Submit a loan application."""
-    # TODO: Implement using LoanApplicationService
-    raise HTTPException(status_code=501, detail="Not implemented - waiting for LoanApplicationService")
+@router.post("/apply", status_code=201)
+def apply_for_loan(
+        request: LoanApplicationRequest,
+        current_user: User = Depends(get_current_user),
+        db: Session = Depends(get_db),
+):
+    """Submit a loan application for the authenticated user."""
+    service = LoanApplicationService(db)
+    try:
+        loan = service.apply(user=current_user, amount=request.amount)
+    except LoanApplicationError as e:
+        raise HTTPException(status_code=422, detail=str(e))
 
+    return {
+        "message": "Loan application submitted successfully.",
+        "loan_id": loan.id,
+        "amount": loan.amount,
+        "status": loan.status.value,
+        "created_at": loan.created_at.isoformat(),
+    }
 
 @router.get("/me")
 def get_my_loans(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
