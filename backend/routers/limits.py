@@ -31,7 +31,7 @@ def get_limits(current_user: User = Depends(get_current_user), db: Session = Dep
     return {
         "max_single_transfer": account.single_transfer_limit,
         "max_daily_amount": account.daily_limit,
-        "max_daily_count": None
+        "max_daily_count": account.daily_count_limit
     }
 
 
@@ -44,16 +44,18 @@ def update_limits(request: LimitsUpdateRequest, current_user: User = Depends(get
 
     new_daily = request.max_daily_amount if request.max_daily_amount is not None else account.daily_limit
     new_single = request.max_single_transfer if request.max_single_transfer is not None else account.single_transfer_limit
+    new_count = request.max_daily_count if request.max_daily_count is not None else account.daily_count_limit
 
     limit_service = TransactionLimitService(db)
     updated_account = limit_service.update_limits(
         account_id=account.id,
         new_daily_limit=new_daily,
-        new_single_limit=new_single
+        new_single_limit=new_single,
+        new_daily_count = new_count
     )
 
     return {
         "max_single_transfer": updated_account.single_transfer_limit,
         "max_daily_amount": updated_account.daily_limit,
-        "max_daily_count": None
+        "max_daily_count": updated_account.daily_count_limit
     }

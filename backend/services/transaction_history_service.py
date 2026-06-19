@@ -1,4 +1,4 @@
-from sqlmodel import Session, select, desc, asc
+from sqlmodel import Session, select, desc, asc, func
 from backend.models.transaction import Transaction
 
 
@@ -21,3 +21,9 @@ class TransactionHistoryService:
 
         results = self.session.exec(statement).all()
         return list(results)
+
+    def get_total_count(self, account_id: int) -> int:
+        """Returns the total number of transactions in the account"""
+        statement = select(func.count()).select_from(Transaction).where(Transaction.account_id == account_id)
+        count = self.session.exec(statement).one()
+        return count
