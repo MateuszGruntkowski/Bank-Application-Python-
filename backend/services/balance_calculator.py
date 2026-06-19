@@ -29,5 +29,7 @@ class BalanceCalculator:
                 balance += txn.amount
             elif txn.type == TransactionType.OUT:
                 balance -= txn.amount
+            elif txn.type == TransactionType.OUT_EXTERNAL:
+                balance -= txn.amount
 
         return balance
