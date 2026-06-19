@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlmodel import Session, select
 from datetime import datetime
+import math
 
 from backend.auth import get_current_user
 from backend.database import get_db
@@ -36,8 +37,22 @@ def get_my_transactions(
     service = TransactionHistoryService(db)
     transactions = service.get_history(account_id=account.id, limit=limit, offset=offset, sort_order=sort_order)
 
-    return transactions
+    total_transactions = service.get_total_count(account_id=account.id)
+    total_pages = math.ceil(total_transactions / per_page)
 
+    formatted_transactions = []
+    for tx in transactions:
+        tx_data = tx.model_dump() if hasattr(tx, "model_dump") else tx.model_dump()
+        if tx.created_at:
+            tx_data["created_at"] = tx.created_at.strftime("%d.%m.%Y %H:%M")
+
+        formatted_transactions.append(tx_data)
+
+    return {
+        "transactions": formatted_transactions,
+        "total": total_transactions,
+        "pages": total_pages
+    }
 @router.get("/me/statement")
 def get_statement(
     date_from: datetime, date_to: datetime,

@@ -20,7 +20,7 @@ def test_update_limits_successfully(session: Session):
     session.commit()
 
     service = TransactionLimitService(session)
-    service.update_limits(account.id, new_daily_limit=2000.0, new_single_limit=1000.0)
+    service.update_limits(account.id, new_daily_limit=2000.0, new_single_limit=1000.0, new_daily_count=5)
 
     session.refresh(account)
     assert account.daily_limit == 2000.0

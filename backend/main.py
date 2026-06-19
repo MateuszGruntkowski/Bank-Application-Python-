@@ -34,7 +34,7 @@ from backend.routers.transfers import router as transfers_router
 async def lifespan(app: FastAPI):
     """Initialize database and seed data on startup."""
     init_db()
-    # seed()
+    seed()
     yield
 
 
