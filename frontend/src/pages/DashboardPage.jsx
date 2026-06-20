@@ -61,7 +61,7 @@ export default function DashboardPage() {
             <tbody>
               {data.recent_transactions.map((tx, i) => (
                 <tr key={i} className="border-b border-gray-50">
-                  <td className="py-3 text-gray-600">{tx.date}</td>
+                  <td className="py-3 text-gray-600">{tx.created_at}</td>
                   <td className="py-3">{tx.title}</td>
                   <td className={`py-3 text-right font-medium ${tx.amount >= 0 ? "text-primary-600" : "text-red-500"}`}>
                     {tx.amount >= 0 ? "+" : ""}{tx.amount} {config.currency}

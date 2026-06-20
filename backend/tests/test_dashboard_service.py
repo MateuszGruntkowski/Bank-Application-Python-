@@ -24,5 +24,5 @@ def test_get_dashboard():
 
     assert result["account"]["user_id"] == 1
     assert result["balance"] is not None
-    assert len(result["last_transactions"]) == 5
+    assert len(result["recent_transactions"]) == 5
     assert result["unread_notifications"] == 0
