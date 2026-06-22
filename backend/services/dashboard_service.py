@@ -19,12 +19,18 @@ class DashboardService:
         return {
             "account": {"user_id": user_id},
             "balance": BalanceCalculator().get_balance(user_id, self.session),
-            "recent_transactions": self.session.exec(
-                select(Transaction)
-                .where(Transaction.account_id == user_id)
-                .order_by(Transaction.created_at.desc())
-                .limit(5)
-            ).all(),
+            "recent_transactions": [
+                {
+                    **tx.model_dump(),
+                    "created_at": tx.created_at.strftime("%d.%m.%Y %H:%M"),
+                }
+                for tx in self.session.exec(
+                    select(Transaction)
+                    .where(Transaction.account_id == user_id)
+                    .order_by(Transaction.created_at.desc())
+                    .limit(5)
+                ).all()
+            ],
             "transaction_count": self.session.exec(
                 select(func.count(Transaction.id))
                 .where(Transaction.account_id == user_id)

@@ -17,10 +17,12 @@ export default function LoansPage() {
   useEffect(() => { loadLoans(); }, []);
 
   const handleApply = async (e) => {
-    e.preventDefault();
-    await execute(() => api.post("/loans/apply", { amount: parseFloat(amount) }));
-    setAmount("");
-    loadLoans();
+      e.preventDefault();
+      const result = await execute(() => api.post("/loans/apply", { amount: parseFloat(amount) }));
+      if (result) {
+          setAmount("");
+          loadLoans();
+      }
   };
 
   const handleRepay = async (loanId) => {
@@ -78,8 +80,8 @@ export default function LoansPage() {
               </div>
               <div className="grid grid-cols-2 gap-4 text-sm mb-4">
                 <div><span className="text-gray-500">Amount:</span> <span className="font-medium">{loan.amount} {config.currency}</span></div>
-                <div><span className="text-gray-500">Remaining:</span> <span className="font-medium">{loan.remaining ?? "—"} {config.currency}</span></div>
-                <div><span className="text-gray-500">Date:</span> <span className="font-medium">{loan.created_at}</span></div>
+                <div><span className="text-gray-500">Remaining:</span> <span className="font-medium">{loan.remaining_amount} {config.currency}</span></div>
+                <div><span className="text-gray-500">Date:</span> <span className="font-medium">{new Date(loan.created_at).toLocaleDateString("pl-PL")}</span></div>
                 <div><span className="text-gray-500">Rate:</span> <span className="font-medium">{loan.interest_rate ?? "5"}%</span></div>
               </div>
               {loan.status === "APPROVED" && (

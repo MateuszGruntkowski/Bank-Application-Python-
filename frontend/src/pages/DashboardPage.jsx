@@ -59,15 +59,18 @@ export default function DashboardPage() {
               <th className="text-right py-2 text-gray-500 font-medium">Amount</th>
             </tr></thead>
             <tbody>
-              {data.recent_transactions.map((tx, i) => (
-                <tr key={i} className="border-b border-gray-50">
-                  <td className="py-3 text-gray-600">{tx.created_at}</td>
-                  <td className="py-3">{tx.title}</td>
-                  <td className={`py-3 text-right font-medium ${tx.amount >= 0 ? "text-primary-600" : "text-red-500"}`}>
-                    {tx.amount >= 0 ? "+" : ""}{tx.amount} {config.currency}
-                  </td>
-                </tr>
-              ))}
+              {data.recent_transactions.map((tx, i) => {
+                const isIncoming = tx.type === "IN";
+                return (
+                  <tr key={i} className="border-b border-gray-50">
+                    <td className="py-3 text-gray-600">{tx.created_at}</td>
+                    <td className="py-3">{tx.title}</td>
+                    <td className={`py-3 text-right font-medium ${isIncoming ? "text-primary-600" : "text-red-500"}`}>
+                      {isIncoming ? "+" : "-"}{tx.amount} {config.currency}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         ) : (
