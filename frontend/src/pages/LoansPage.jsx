@@ -17,10 +17,12 @@ export default function LoansPage() {
   useEffect(() => { loadLoans(); }, []);
 
   const handleApply = async (e) => {
-    e.preventDefault();
-    await execute(() => api.post("/loans/apply", { amount: parseFloat(amount) }));
-    setAmount("");
-    loadLoans();
+      e.preventDefault();
+      const result = await execute(() => api.post("/loans/apply", { amount: parseFloat(amount) }));
+      if (result) {
+          setAmount("");
+          loadLoans();
+      }
   };
 
   const handleRepay = async (loanId) => {

@@ -68,6 +68,5 @@ class LoanApplicationService:
         existing = self.db.exec(statement).first()
         if existing is not None:
             raise LoanApplicationError(
-                f"User already has an active loan (id={existing.id}, "
-                f"status={existing.status.value})."
+                f"User already has an active loan"
             )
