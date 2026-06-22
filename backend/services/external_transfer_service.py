@@ -31,6 +31,9 @@ class ExternalTransferService:
         Raises:
             InsufficientFundsError: If the sender has insufficient funds.
         """
+        if amount <= 0:
+            raise ValueError(f"Transfer amount must be positive, got: {amount}.")
+
         balance = self.balance_calculator.get_balance(from_account.id, self.session)
         if balance < amount:
             raise InsufficientFundsError(

@@ -74,3 +74,13 @@ def test_external_transfer_does_not_verify_recipient(session: Session, sender: A
     txns = session.exec(select(Transaction).where(Transaction.title == "To unknown")).all()
     assert len(txns) == 1
     assert txns[0].type == TransactionType.OUT_EXTERNAL
+
+def test_external_transfer_negative_amount_raises(session: Session, sender: Account):
+    """Transfer with negative amount raises ValueError and creates no records."""
+    with pytest.raises(ValueError):
+        ExternalTransferService(session).execute_transfer(
+            sender, "DE89370400440532013000", -100.0, "Negative transfer"
+        )
+
+    txns = session.exec(select(Transaction).where(Transaction.title == "Negative transfer")).all()
+    assert len(txns) == 0
