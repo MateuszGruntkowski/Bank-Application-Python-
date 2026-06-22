@@ -96,20 +96,23 @@ export default function HistoryPage() {
                 </tr>
               </thead>
               <tbody>
-                {data.transactions.map((tx, i) => (
-                  <tr key={i} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                    <td className="py-3 px-4 text-gray-600">{tx.date || tx.created_at}</td>
-                    <td className="py-3 px-4">
-                      <span className={`inline-block px-2 py-1 text-xs rounded-md ${tx.type === 'IN' ? 'bg-primary-50 text-primary-700' : 'bg-gray-100 text-gray-700'}`}>
-                        {tx.type}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">{tx.title}</td>
-                    <td className={`py-3 px-4 text-right font-medium ${tx.amount >= 0 ? "text-primary-600" : "text-gray-900"}`}>
-                      {tx.amount >= 0 ? "+" : ""}{tx.amount} {config.currency}
-                    </td>
-                  </tr>
-                ))}
+                {data.transactions.map((tx, i) => {
+                  const isIncoming = tx.type === "IN";
+                  return (
+                    <tr key={i} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                      <td className="py-3 px-4 text-gray-600">{tx.date || tx.created_at}</td>
+                      <td className="py-3 px-4">
+                        <span className={`inline-block px-2 py-1 text-xs rounded-md ${isIncoming ? 'bg-primary-50 text-primary-700' : 'bg-gray-100 text-gray-700'}`}>
+                          {tx.type}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">{tx.title}</td>
+                      <td className={`py-3 px-4 text-right font-medium ${isIncoming ? "text-primary-600" : "text-red-500"}`}>
+                        {isIncoming ? "+" : "-"}{tx.amount} {config.currency}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
             

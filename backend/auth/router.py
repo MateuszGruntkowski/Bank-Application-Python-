@@ -17,7 +17,6 @@ from backend.models.user import User
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-
 class RegisterRequest(BaseModel):
     """Schema for user registration."""
 
@@ -31,7 +30,6 @@ class LoginRequest(BaseModel):
 
     username: str
     password: str
-
 
 def _get_token(authorization: Optional[str] = Header(None)) -> str:
     """Extract Bearer token from Authorization header."""

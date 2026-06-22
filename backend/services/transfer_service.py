@@ -5,7 +5,7 @@ from sqlmodel import Session, select
 from backend.models.account import Account
 from backend.models.transaction import Transaction, TransactionType
 from backend.services.balance_calculator import BalanceCalculator
-
+from backend.services.transaction_limit_service import TransactionLimitService
 
 class InsufficientFundsError(Exception):
     """Raised when the sender does not have enough funds."""
@@ -55,6 +55,10 @@ class TransferService:
             raise InsufficientFundsError(
                 f"Insufficient funds. Available: {balance:.2f}, requested: {amount:.2f}."
             )
+
+        # Verify senders transaction limits
+        limit_service = TransactionLimitService(self.session)
+        limit_service.validate_transfer_limits(from_account, amount)
 
         # Execute transfer as a single DB transaction
         try:

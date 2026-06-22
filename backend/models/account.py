@@ -15,3 +15,6 @@ class Account(SQLModel, table=True):
     user_id: int = Field(foreign_key="users.id", unique=True)
     account_number: str = Field(max_length=28, unique=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    daily_limit: float = Field(default=5000.0)
+    single_transfer_limit: float = Field(default=2000.0)
+    daily_count_limit: int = Field(default=10)
