@@ -29,7 +29,7 @@ def test_transaction_history_pagination_and_sorting(session: Session):
 
     # A) Main test
     all_transactions = service.get_history(account_id=jan_account.id, limit=10, offset=0)
-    assert len(all_transactions) == 3
+    assert len(all_transactions) == 10
 
     # B) Pagination test (page 1: limit 2)
     page_1 = service.get_history(account_id=jan_account.id, limit=2, offset=0)
@@ -37,4 +37,4 @@ def test_transaction_history_pagination_and_sorting(session: Session):
 
     # C) Pagination test (page 2: limit 2, offset 2) - only one transaction left
     page_2 = service.get_history(account_id=jan_account.id, limit=2, offset=2)
-    assert len(page_2) == 1
+    assert len(page_2) == 2

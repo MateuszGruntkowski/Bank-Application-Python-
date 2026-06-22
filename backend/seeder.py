@@ -1,10 +1,7 @@
-"""
-Database seeder - creates initial admin user and test data.
-Run once on first startup to populate the database.
-"""
-
+import random
 from sqlmodel import Session, select
 from datetime import datetime, UTC
+
 from backend.models.transaction import Transaction
 from backend.auth.service import AuthService
 from backend.database import engine
@@ -13,32 +10,33 @@ from backend.models.user import User
 from backend.models.user_profile import UserProfile
 from backend.services.transfer_service import TransferService
 
+try:
+    from backend.models.recipient import Recipient
+except ImportError:
+    Recipient = None
+
 
 def _generate_account_number(index: int) -> str:
-    """Generate a deterministic account number for seeding."""
     base = str(index).zfill(26)
     return f"PL{base}"
 
 
 class DatabaseSeeder:
-    """Service for seeding 5 test users and generating transfer history."""
-
     def __init__(self, session: Session):
         self.session = session
         self.auth = AuthService(session)
         self.transfer_service = TransferService(session)
 
     def seed(self):
-        """Executes the seeding process."""
         if self.session.exec(select(User)).first():
             return
 
         self._seed_admin()
         users = self._seed_test_users
+        self._seed_recipients(users)
         self._seed_transfers(users)
 
     def _seed_admin(self):
-        """Creates the admin user from the original code."""
         admin = User(
             username="admin",
             email="admin@bank.io",
@@ -54,7 +52,6 @@ class DatabaseSeeder:
 
     @property
     def _seed_test_users(self) -> list[User]:
-        """Creates exactly 5 test users as required by task 3."""
         users_data = [
             ("jan_kowalski", "jan@bank.io"),
             ("anna_nowak", "anna@bank.io"),
@@ -90,10 +87,11 @@ class DatabaseSeeder:
 
             self.session.add(user_profile)
             self.session.commit()
+
             initial_deposit = Transaction(
                 account_id=account.id,
-                amount=1000.0,
-                title="Initial Income",
+                amount=25000.0,
+                title="Initial Income / Salary",
                 type="IN",
                 created_at=datetime.now(UTC)
             )
@@ -104,29 +102,58 @@ class DatabaseSeeder:
 
         return created_users
 
+    def _seed_recipients(self, users: list[User]):
+        if not Recipient:
+            print("Recipient model not imported. Skipping recipients seeding.")
+            return
+
+        for user in users:
+            others = [u for u in users if u.id != user.id]
+            friends = random.sample(others, 2)
+
+            for friend in friends:
+                friend_acc = self.session.exec(select(Account).where(Account.user_id == friend.id)).first()
+                friend_name = friend.username.replace("_", " ").title()
+
+                recipient = Recipient(
+                    user_id=user.id,
+                    account_number=friend_acc.account_number,
+                    name=f"{friend_name} (Contact)",
+                )
+                self.session.add(recipient)
+        self.session.commit()
+
     def _seed_transfers(self, users: list[User]):
-        """Uses TransferService to generate transfer history between test users."""
-        for i in range(len(users)):
-            sender = users[i]
-            receiver = users[(i + 1) % len(users)]
+        titles = [
+            "Pizza split", "Movie tickets", "Electricity bill",
+            "Netflix subscription", "Gas money", "Birthday gift",
+            "Yesterday's lunch", "Apartment rent", "Trip settlement"
+        ]
 
-            sender_acc = self.session.exec(select(Account).where(Account.user_id == sender.id)).first()
-            receiver_acc = self.session.exec(select(Account).where(Account.user_id == receiver.id)).first()
+        for user in users:
+            sender_acc = self.session.exec(select(Account).where(Account.user_id == user.id)).first()
+            others = [u for u in users if u.id != user.id]
 
-            if sender_acc and receiver_acc:
-                try:
-                    self.transfer_service.execute_transfer(
-                        from_account=sender_acc,
-                        to_account_number=receiver_acc.account_number,
-                        amount=100.0,
-                        title=f"Test transfer from {sender.username}"
-                    )
-                except Exception as e:
-                    print(f"Could not transfer from {sender.username}: {e}")
+            for _ in range(7):
+                receiver = random.choice(others)
+                receiver_acc = self.session.exec(select(Account).where(Account.user_id == receiver.id)).first()
+
+                amount = round(random.uniform(15.0, 450.0), 2)
+                title = random.choice(titles)
+
+                if sender_acc and receiver_acc:
+                    try:
+                        self.transfer_service.execute_transfer(
+                            from_account=sender_acc,
+                            to_account_number=receiver_acc.account_number,
+                            amount=amount,
+                            title=title
+                        )
+                    except Exception as e:
+                        print(f"Error transferring from {user.username}: {e}")
 
 
 def seed():
-    """Populate the database with initial data if empty."""
     with Session(engine) as db:
         seeder = DatabaseSeeder(db)
         seeder.seed()
@@ -136,4 +163,4 @@ if __name__ == "__main__":
     from backend.database import init_db
     init_db()
     seed()
-    print("Database seeded successfully.")
+    print("Database seeded successfully with test operations")

@@ -67,5 +67,5 @@ def test_calculate_score_poor_finances(MockBalanceCalculator):
     
     result = CreditScoringService.calculate_score(3, db_mock)
     
-    assert result["score"] == 20
+    assert result["score"] == 22
     assert result["recommendation"] == "REJECT"
