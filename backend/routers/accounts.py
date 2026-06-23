@@ -2,9 +2,10 @@
 
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlmodel import Session, select
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 import math
 
+from typing import Optional
 from backend.auth import get_current_user
 from backend.database import get_db
 from backend.models.user import User
@@ -14,7 +15,6 @@ from backend.services.statement_generator import StatementGenerator
 from backend.services.transaction_history_service import TransactionHistoryService
 
 router = APIRouter(prefix="/accounts", tags=["Accounts"])
-
 
 
 @router.get("/me/transactions")
@@ -53,12 +53,25 @@ def get_my_transactions(
         "total": total_transactions,
         "pages": total_pages
     }
+
+
 @router.get("/me/statement")
 def get_statement(
-    date_from: datetime, date_to: datetime,
-    current_user: User = Depends(get_current_user), db: Session = Depends(get_db),
+        date_from: Optional[str] = None,
+        date_to: Optional[str] = None,
+        current_user: User = Depends(get_current_user), db: Session = Depends(get_db),
 ):
     """Generate and download a CSV bank statement."""
+    if not date_to or date_to.strip() == "":
+        final_date_to = datetime.now(timezone.utc)
+    else:
+        final_date_to = datetime.fromisoformat(date_to.replace("Z", "+00:00"))
+
+    if not date_from or date_from.strip() == "":
+        final_date_from = final_date_to - timedelta(days=30)
+    else:
+        final_date_from = datetime.fromisoformat(date_from.replace("Z", "+00:00"))
+
     # Looking for a bank account that belongs to the logged in user
     account = db.exec(select(Account).where(Account.user_id == current_user.id)).first()
 
@@ -67,7 +80,7 @@ def get_statement(
 
     # Launch website
     generator = StatementGenerator(db)
-    csv_content = generator.generate_csv(account.id, date_from, date_to)
+    csv_content = generator.generate_csv(account.id, final_date_from, final_date_to)
 
     # Return the response as a file downloaded by the browser
     return Response(
