@@ -124,24 +124,44 @@ class DatabaseSeeder:
         self.session.commit()
 
     def _seed_transfers(self, users: list[User]):
-        titles = [
-            "Pizza split", "Movie tickets", "Electricity bill",
-            "Netflix subscription", "Gas money", "Birthday gift",
-            "Yesterday's lunch", "Apartment rent", "Trip settlement"
+        p2p_titles = [
+            "Pizza split", "Movie tickets", "Gas money",
+            "Birthday gift", "Yesterday's lunch", "Trip settlement"
+        ]
+
+        external_bills = [
+            "Electricity bill", "Netflix subscription",
+            "Apartment rent", "Phone bill", "Gym membership", "Groceries"
         ]
 
         for user in users:
             sender_acc = self.session.exec(select(Account).where(Account.user_id == user.id)).first()
             others = [u for u in users if u.id != user.id]
 
-            for _ in range(7):
+            if not sender_acc:
+                continue
+
+            for _ in range(4):
+                amount = round(random.uniform(20.0, 300.0), 2)
+                title = random.choice(external_bills)
+
+                bill_tx = Transaction(
+                    account_id=sender_acc.id,
+                    amount=amount,
+                    title=title,
+                    type="OUT",
+                    created_at=datetime.now(UTC)
+                )
+                self.session.add(bill_tx)
+
+            for _ in range(3):
                 receiver = random.choice(others)
                 receiver_acc = self.session.exec(select(Account).where(Account.user_id == receiver.id)).first()
 
-                amount = round(random.uniform(15.0, 450.0), 2)
-                title = random.choice(titles)
+                amount = round(random.uniform(15.0, 150.0), 2)
+                title = random.choice(p2p_titles)
 
-                if sender_acc and receiver_acc:
+                if receiver_acc:
                     try:
                         self.transfer_service.execute_transfer(
                             from_account=sender_acc,
@@ -152,6 +172,7 @@ class DatabaseSeeder:
                     except Exception as e:
                         print(f"Error transferring from {user.username}: {e}")
 
+            self.session.commit()
 
 def seed():
     with Session(engine) as db:
