@@ -9,6 +9,7 @@ from backend.database import get_db
 from backend.models.user import User
 from backend.services.scoring import CreditScoringService
 from backend.services.loan_approval_service import LoanApprovalService
+from backend.services.loan_list_service import LoanListService
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -32,8 +33,9 @@ class ReversalRequest(BaseModel):
 def get_all_loans(status: str = "", page: int = 1, per_page: int = 10, admin: User = Depends(require_admin),
                   db: Session = Depends(get_db)):
     """Get all loan applications with optional status filter."""
-    # TODO: Implement using LoanListService
-    raise HTTPException(status_code=501, detail="Not implemented - waiting for LoanListService")
+    service = LoanListService(db)
+    filter_status = status if status else None
+    return service.get_all_loans(status=filter_status)
 
 
 @router.post("/loans/{loan_id}/approve")
