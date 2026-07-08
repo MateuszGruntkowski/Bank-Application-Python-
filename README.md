@@ -19,9 +19,6 @@ The original group project was not fully completed within the course timeline. I
 
 ## Screenshots
 
-> Add screenshots here to showcase the app without requiring installation.
-
-<!--
 Example:
 ![Dashboard](docs/screenshots/Dashboard.png)
 ![Transaction History](docs/screenshots/TransactionHistory.png)
@@ -30,7 +27,7 @@ Example:
 ![ATM](docs/screenshots/ATM.png)
 ![Loans](docs/screenshots/Loans.png)
 ![Transaction Limits](docs/screenshots/TransactionLimits.png)
--->
+
 
 ## Features
 
