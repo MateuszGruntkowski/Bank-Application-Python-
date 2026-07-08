@@ -4,19 +4,6 @@ A full-stack banking application built as a university group project by a team o
 
 The original group project was not fully completed within the course timeline. It is currently being developed further and maintained independently by me.
 
-## Tech Stack
-
-**Backend**
-- Python
-- FastAPI
-- Pydantic
-- Pytest
-- SQLite
-
-**Frontend**
-- React
-- Tailwind CSS
-
 ## Screenshots
 
 Example:
@@ -28,6 +15,15 @@ Example:
 ![Loans](docs/screenshots/Loans.png)
 ![Transaction Limits](docs/screenshots/TransactionLimits.png)
 
+## Tech Stack
+
+**Backend**
+- Python (FastAPI, PyTest, Pydantic)
+- SQLite
+
+**Frontend**
+- React
+- Tailwind CSS
 
 ## Features
 
